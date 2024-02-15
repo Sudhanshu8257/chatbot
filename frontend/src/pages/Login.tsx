@@ -37,7 +37,7 @@ const Login = () => {
       display="flex"
       flex={1}
       alignItems={"center"}
-      justifyContent={"center"}
+      justifyContent={"space-evenly"}
     >
       <Box padding={8} mt={8} display={{ md: "flex", sm: "none", xs: "none" }}>
         <img src="airobot.png" alt="Robot" style={{ width: "300px" }} />
@@ -48,8 +48,6 @@ const Login = () => {
         justifyContent={"center"}
         alignItems={"center"}
         padding={2}
-        borderRadius={24}
-        ml={"auto"}
         mt={16}
       >
         <form
@@ -74,6 +72,7 @@ const Login = () => {
               textAlign="center"
               padding={2}
               fontWeight={600}
+              mb={4}
             >
               Login
             </Typography>

@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import { Box, Avatar,  } from "@mui/material";
+import { useEffect, useRef } from "react";
+import { Box, Avatar } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
 import Markdown from "markdown-to-jsx";
 import hljs from "highlight.js/lib/core";
@@ -29,10 +29,12 @@ const ChatItem = ({
   hljs.registerLanguage("ruby", ruby);
   hljs.registerLanguage("php", php);
   hljs.registerLanguage("typescript", typescript);
+
+  // @ts-expect-error props
   function SyntaxHighlightedCode(props) {
     const ref = useRef<HTMLElement | null>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
       if (ref.current && props.className?.includes("lang-") && hljs) {
         hljs.highlightElement(ref.current);
 
@@ -43,7 +45,7 @@ const ChatItem = ({
 
     return <code {...props} ref={ref} />;
   }
-
+  role == "user" && console.log(parts);
   const auth = useAuth();
   return role == "model" ? (
     <Box
@@ -54,23 +56,27 @@ const ChatItem = ({
         gap: 2,
         borderRadius: 2,
         my: 2,
+        alignItems: "center",
       }}
     >
-      <Avatar sx={{ ml: "0" }}>
-        <img src="openai.png" alt="openai" width={"30px"} />
-      </Avatar>
-      <Box textAlign={"left"} overflow={"auto"}>
-        <Markdown
-          options={{
-            wrapper: "div",
-            overrides: {
-              code: SyntaxHighlightedCode,
-            },
-          }}
-        >
-          {parts}
-        </Markdown>
-      </Box>
+      <div style={{ height: "100%" }}>
+        <Avatar sx={{ ml: "0" }}>
+          <img src="openai.png" alt="openai" width={"30px"} />
+        </Avatar>
+      </div>
+      {
+        <Box textAlign={"left"} overflow={"auto"}>
+          <Markdown
+            options={{
+              overrides: {
+                code: SyntaxHighlightedCode,
+              },
+            }}
+          >
+            {parts}
+          </Markdown>
+        </Box>
+      }
     </Box>
   ) : (
     <Box
@@ -80,25 +86,38 @@ const ChatItem = ({
         bgcolor: "rgba(0, 77, 86, 0.5)",
         gap: 2,
         borderRadius: 2,
+        alignItems: "center",
       }}
     >
-      <Avatar sx={{ ml: "0", bgcolor: "black", color: "white" }}>
-        {auth?.user?.name[0]}
-
-        {auth?.user?.name?.includes(" ") && auth?.user?.name?.split(" ")[1][0]}
-      </Avatar>
-      <Box textAlign={"left"}>
-        <Markdown
-          options={{
-            wrapper: "div",
-            overrides: {
-              code: SyntaxHighlightedCode,
-            },
+      <div style={{ height: "100%" }}>
+        <Avatar
+          sx={{
+            ml: "0",
+            bgcolor: "black",
+            color: "white",
+            mt: "auto",
           }}
         >
-          {parts}
-        </Markdown>
-      </Box>
+          {auth?.user?.name[0]}
+
+          {auth?.user?.name?.includes(" ") &&
+            auth?.user?.name?.split(" ")[1][0]}
+        </Avatar>
+      </div>
+      {
+        <Box textAlign={"left"}>
+          <Markdown
+            options={{
+              overrides: {
+                code: SyntaxHighlightedCode,
+              },
+              disableParsingRawHTML: true,
+            }}
+          >
+            {parts}
+          </Markdown>
+        </Box>
+      }
     </Box>
   );
 };
