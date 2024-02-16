@@ -54,7 +54,7 @@ export const sendChatsToUser = async (
     return res.status(200).json({ message: "OK", chats: user.chats });
   } catch (error) {
     console.log(error);
-    return res.status(200).json({ message: "ERROR", cause: error.message });
+    return res.status(500).json({ message: "ERROR", cause: error.message });
   }
 };
 
@@ -78,6 +78,6 @@ export const deleteChats = async (
     return res.status(200).json({ message: "OK" });
   } catch (error) {
     console.log(error);
-    return res.status(200).json({ message: "ERROR", cause: error.message });
+    return res.status(500).json({ message: "ERROR", cause: error.message });
   }
 };
