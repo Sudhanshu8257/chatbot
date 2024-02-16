@@ -45,8 +45,9 @@ const ChatItem = ({
 
     return <code {...props} ref={ref} />;
   }
-  role == "user" && console.log(parts);
+
   const auth = useAuth();
+
   return role == "model" ? (
     <Box
       sx={{

@@ -1,9 +1,9 @@
-import { Box, IconButton } from "@mui/material";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { IoMdSend } from "react-icons/io";
 import { useAuth } from "../context/AuthContext";
-import ChatItem from "../components/chat/ChatItem";
 import { useNavigate } from "react-router-dom";
+import ChatItem from "../components/chat/ChatItem";
+import DeleteModal from "../components/chat/DeleteModal";
+import { Box, IconButton } from "@mui/material";
 import {
   deleteUserChats,
   getUserChats,
@@ -11,32 +11,33 @@ import {
 } from "../helpers/api-communicator";
 import toast from "react-hot-toast";
 import { BiLoader } from "react-icons/bi";
-import DeleteModal from "../components/chat/DeleteModal";
+import { IoMdSend } from "react-icons/io";
+import { FaArrowDown } from "react-icons/fa";
 type Message = {
   role: "user" | "model";
   parts: string;
 };
 const Chat = () => {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const auth = useAuth();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
-  const auth = useAuth();
+  const chatRef = useRef<HTMLDivElement | null>(null);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showButton, setShowButton] = useState(false);
   const handleSubmit = async () => {
     const content = inputRef.current?.value as string;
     if (inputRef && inputRef.current) {
       inputRef.current.value = "";
     }
-
     try {
       setIsLoading(true);
       const newMessage: Message = { role: "user", parts: content };
       setChatMessages((prev) => [...prev, newMessage]);
       const chatData = await sendChatRequest(content);
-      console.log("chatData =>", chatData);
-      setChatMessages([...chatData.chats]);
+      setChatMessages((prev) => [...prev, chatData.chats]);
     } catch (error) {
       console.log(error);
     } finally {
@@ -53,6 +54,15 @@ const Chat = () => {
     } catch (error) {
       console.log(error);
       toast.error("Deleting chats failed", { id: "deletechats" });
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (chatContainerRef?.current) {
+      chatContainerRef?.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
     }
   };
 
@@ -82,18 +92,32 @@ const Chat = () => {
     }
   }, [auth]);
 
-  const scrollToBottom = () => {
-    if (chatContainerRef?.current) {
-      chatContainerRef?.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
-    }
-  };
-
   useEffect(() => {
     scrollToBottom();
   }, [chatMessages.length]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = chatRef.current;
+      if (container) {
+        const isNotAtBottom =
+          container.scrollTop + container.clientHeight <
+          container.scrollHeight - 10;
+        setShowButton(isNotAtBottom);
+      }
+    };
+
+    const container = chatRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
 
   return (
     <Box
@@ -125,16 +149,16 @@ const Chat = () => {
           flexDirection: "column",
           scrollbarWidth: "12px",
           scrollbarColor: "rgb(17,67,69) transparent",
-          overflow: "scroll",
-          overflowX: "hidden",
           overflowY: "auto",
           scrollBehavior: "smooth",
         }}
+        ref={chatRef}
       >
         {chatMessages.length > 0 &&
           chatMessages?.map((chat, index) => (
             <ChatItem parts={chat.parts} role={chat.role} key={index} />
           ))}
+
         {isLoading && (
           <div
             style={{
@@ -147,8 +171,29 @@ const Chat = () => {
             <BiLoader size={32} color="white" className="rotate" />
           </div>
         )}
+
         <div ref={chatContainerRef}></div>
       </Box>
+      {showButton && (
+        <div
+          onClick={scrollToBottom}
+          style={{
+            zIndex: "99",
+            position: "absolute",
+            padding: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            borderRadius: "100px",
+            bottom: "15%",
+            left: "48%",
+            backgroundColor: "rgb(17,27,39)",
+          }}
+        >
+          <FaArrowDown size={18} color="white" />
+        </div>
+      )}
       <Box
         sx={{
           maxWidth: "100%",
