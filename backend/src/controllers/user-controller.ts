@@ -3,7 +3,6 @@ import User from "../models/User.js";
 import { compare, hash } from "bcrypt";
 import { createToken } from "../utils/token-manager.js";
 import { COOKIE_NAME } from "../utils/constants.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import "dotenv/config";
 
 const apiKey = process.env.GEMINI_API;
@@ -119,24 +118,6 @@ export const verifyUser = async (
   }
 };
 
-export async function runy(req: Request, res: Response, next: NextFunction) {
-  // For text-only input, use the gemini-pro model
-  const message = req.body.message;
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-  const chat = model.startChat();
-  //"How many paws are in my house?"
-  const ressss = await chat.getHistory();
-  console.log(ressss);
-  const msg = message;
-
-  const result = await chat.sendMessage(msg);
-  const response = await result.response;
-  const text = response.text();
-  console.log(text);
-  return res.send(text);
-}
-
 export const userLogout = async (
   req: Request,
   res: Response,
@@ -164,6 +145,6 @@ export const userLogout = async (
       .json({ message: "OK", name: user.name, email: user.email });
   } catch (error) {
     console.log(error);
-    return res.status(200).json({ message: "ERROR", cause: error.message });
+    return res.status(500).json({ message: "ERROR", cause: error.message });
   }
 };
